@@ -60,8 +60,14 @@ app.post('/urls', (request, response) => {
   // console.log(request.body.longURL);
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = request.body.longURL;
-  response.redirect(`urls/${shortURL}`);
+  response.redirect(`/urls/${shortURL}`);
 });
+
+app.post('/urls/:id/update', (req, res) => {
+  console.log("is this working")
+ urlDatabase[req.params.id] = req.body.longURL;
+ res.redirect(`/urls/${req.params.id}`);
+})
 
 app.post('/urls/:id/delete', (req, res) => {
   delete urlDatabase[req.params.id];

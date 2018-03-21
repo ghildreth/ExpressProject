@@ -5,11 +5,14 @@
   <% include ./partials/_header %>
 </head>
 <body>
-  <h2> Shortened URLs Only </h2>
+  <h2> Shortened URLs=</h2>
 
   <ul>
     <%= shortURL %>
-    <%= longURL %>
+    <form method="POST" action="/urls/<%= shortURL%>/update">
+      <input type="text" name="longURL" value ="<%=longURL%>">
+      <button type="submit">Update</button>
+    </form>
   </ul>
     <a href = "/">Link back Home</a>
 
