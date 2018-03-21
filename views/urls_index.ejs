@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>TinyApp</title>
+  <% include ./partials/_header %>
+</head>
+<body>
+  <h2> List URLs: Shorted to ID --- full URL </h2>
+
+  <ul>
+    <% for (let key in urls) { %>
+      <li><%= key %> --- <%= urls[key] %> </li>
+    <% } %>
+  </ul>
+    <a href = "/">Link for Shorted URLs</a>
+
+</body>
+</html>
