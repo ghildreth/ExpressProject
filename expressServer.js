@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
+const cookieParser = require('cookie-parser')
+app.use(cookieParser());
 
 app.set('view engine', 'ejs');
 
@@ -32,22 +34,28 @@ app.get('/urls.json', (request, response) => {
 
 app.get('/hello', (request, response) => {
   response.end('<html><body>Hello <b>Wolrd</b></body</html>\n');
-})
+});
 
 app.get('/urls', (request, response) => {
-  const templateVars = {urls: urlDatabase };
+  const templateVars = {urls: urlDatabase,
+                    username: request.cookies['username']
+                         };
   response.render('urls_index', templateVars);
-})
+});
 
 app.get('/urls/new', (request, response) => {
-  const templateVars = {longURL: urlDatabase[request.params.id] };
+  const templateVars = {longURL: urlDatabase[request.params.id],
+                       username: request.cookies['username']
+                        };
   response.render('urls_new', templateVars);
 });
 
 app.get('/urls/:id', (request, response) => {
   console.log(request.params)
   const templateVars = {shortURL: request.params.id,
-                       longURL: urlDatabase[request.params.id] };
+                       longURL: urlDatabase[request.params.id],
+                       username: request.cookies['username']
+                        };
   response.render('urls_show', templateVars);
 });
 
@@ -63,16 +71,21 @@ app.post('/urls', (request, response) => {
   response.redirect(`/urls/${shortURL}`);
 });
 
-app.post('/urls/:id/update', (req, res) => {
+app.post('/urls/:id/update', (request, response) => {
   console.log("is this working")
- urlDatabase[req.params.id] = req.body.longURL;
- res.redirect(`/urls/${req.params.id}`);
-})
+ urlDatabase[request.params.id] = request.body.longURL;
+ response.redirect(`/urls/${request.params.id}`);
+});
 
-app.post('/urls/:id/delete', (req, res) => {
+app.post('/login', (request, response) => {
+  response.cookie("username", request.body.username);
+  response.redirect('/urls');
+});
+
+app.post('/urls/:id/delete', (request, response) => {
   delete urlDatabase[req.params.id];
-  res.redirect('/urls');
-})
+  response.redirect('/urls');
+});
 
 app.listen(PORT, () => {
   console.log(`TURNT MAH HEADPHONES UP TO ${PORT}`);

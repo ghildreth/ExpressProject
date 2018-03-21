@@ -8,7 +8,7 @@
 <style>
   body {padding-top: 50px; }
 </style>
-
+<%= username %>
 <nav class = "navbar navbar-default" role="navigation">
 <div class = "container-fluid">
 
@@ -19,8 +19,17 @@
     </a>
 
     <ul class="nav navbar-nav">
-      <li><a href="/">Home<a/></li>
-      <li><a href="/about">About</a></li>
+      <!-- <li><a href="/">Home<a/></li>
+      <li><a href="/about">About</a></li> -->
+
+
+      <form  action="/login"method="POST" style="margin:150px;">
+        <label for="username"> Login</label>
+      <input id="name" type"=text" name="username" placeholder="enter username here">
+      <input type="submit" value="send">
+    </form>
+
+    <br/>
 
     </ul>
   </div>
