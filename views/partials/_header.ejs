@@ -8,27 +8,33 @@
 <style>
   body {padding-top: 50px; }
 </style>
-<%= username %>
 <nav class = "navbar navbar-default" role="navigation">
 <div class = "container-fluid">
 
   <div class ="navbar-header">
     <a class ="navbar-brand" href="#">
       <span class="glyphicon glyphicon glyphicon-tree-deciduous"></span>
-      EJS is FUN!!!!!!!
     </a>
 
+
+    <% if (!username) { %>
+    <h6>Currently not logged in</h6>
     <ul class="nav navbar-nav">
-      <!-- <li><a href="/">Home<a/></li>
-      <li><a href="/about">About</a></li> -->
-
-
       <form  action="/login"method="POST" style="margin:150px;">
         <label for="username"> Login</label>
       <input id="name" type"=text" name="username" placeholder="enter username here">
       <input type="submit" value="send">
     </form>
+    <% } else { %>
+     <ul class="nav navbar-nav">
+      <h6>Currently logged in as: <%= username%></h6>
+      <form  action="/logout"method="POST" style="margin:150px;">
+        <label for="username"> Logout</label>
+      <input id="name" type"=text" name="username" placeholder= "<%= username%>">
+      <input type="submit" value="Clear">
+    </form>
 
+  <% } %>
     <br/>
 
     </ul>

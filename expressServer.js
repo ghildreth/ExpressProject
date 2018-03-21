@@ -82,8 +82,13 @@ app.post('/login', (request, response) => {
   response.redirect('/urls');
 });
 
+app.post('/logout', (request, response) => {
+  response.clearCookie("username", request.body.username);
+  response.redirect('/urls');
+});
+
 app.post('/urls/:id/delete', (request, response) => {
-  delete urlDatabase[req.params.id];
+  delete urlDatabase[request.params.id];
   response.redirect('/urls');
 });
 
