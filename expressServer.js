@@ -51,22 +51,23 @@ app.get('/hello', (request, response) => {
 
 app.get('/urls', (request, response) => {
   const templateVars = {urls: urlDatabase,
-                    username: request.cookies['username']
-                         };
+                    username: request.cookies[users.currentUserID]
+                  };
   response.render('urls_index', templateVars);
 });
 
 app.get('/urls/new', (request, response) => {
   const templateVars = {longURL: urlDatabase[request.params.id],
-                       username: request.cookies['username']
+                       username: request.cookies[users.currentUserID]
                         };
   response.render('urls_new', templateVars);
+  console.log(templateVars)
 });
 
 app.get('/urls/:id', (request, response) => {
   const templateVars = {shortURL: request.params.id,
                        longURL: urlDatabase[request.params.id],
-                       username: request.cookies['username']
+                       username: request.cookies[users.currentUserID]
                         };
   response.render('urls_show', templateVars);
 });
@@ -93,9 +94,28 @@ app.post('/urls/:id/update', (request, response) => {
  response.redirect(`/urls/${request.params.id}`);
 });
 
-app.post('/login', (request, response) => {
-  response.cookie("username", request.body.username);
-  response.redirect('/urls');
+app.get('/login', (request, response) => {
+  let templateVars = {
+                      urls: urlDatabase,
+                      username: request.cookies[users.currentUserID]
+                      }
+  response.render('login', templateVars);
+});
+
+app.post('/login', (request, response,) => {
+  // console.log(request.body.email);
+  for (currentUser in users) {
+    // console.log(currentUser);
+    if ((users[currentUser].email === request.body.email) && (users[currentUser].password === request.body.password)) {
+      // console.log("found a match", currentUser)
+
+      // response.cookie('user_id', )
+      console.log(users[currentUser].id);
+    return response.redirect('/') && response.cookie('user_id', users[currentUser].id);
+    }
+  }
+    return response.send(400);
+
 });
 
 app.post('/logout', (request, response) => {
@@ -104,8 +124,8 @@ app.post('/logout', (request, response) => {
 });
 
 app.post('/register', (request, response) => {
-  let newUserId = generateRandomString();
-  response.cookie('user_id', newUserId);
+  let currentUserID = generateRandomString();
+  response.cookie('user_id', currentUserID);
 
   for(let key in users) {
     const user = users[key];
@@ -115,20 +135,21 @@ app.post('/register', (request, response) => {
   }
 
   if(request.body.email && request.body.password){
-      users[newUserId] = {
-      id: newUserId,
+      users[currentUserID] = {
+      id: currentUserID,
       email: request.body.email,
       password: request.body.password
       }
-      console.log(users);
       response.redirect('/urls');
 
   } else {
     response.status(400);
     response.send("You shall not pass... Please either enter a valid e-mail or password!");
   }
+  console.log(users);
 
 });
+
 app.post('/urls/:id/delete', (request, response) => {
   delete urlDatabase[request.params.id];
   response.redirect('/urls');
