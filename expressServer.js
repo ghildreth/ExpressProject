@@ -18,7 +18,7 @@ const users = {
   "userRandomID": {
     id: 'userRandomID',
     email: 'user@example.com',
-    password: 'purple-monkey-dinosaur'
+    password: 'asdf'
   },
   'user2RandomID': {
     id: 'user2RandomID',
@@ -50,25 +50,33 @@ app.get('/hello', (request, response) => {
 });
 
 app.get('/urls', (request, response) => {
-  const templateVars = {urls: urlDatabase,
-                    username: request.cookies[users.currentUserID]
-                  };
+  let user_id = request.cookies.user_id;
+  let user = users[user_id];
+
+  const templateVars = {
+    urls: urlDatabase,
+    user_id: user_id,
+    user: user
+
+  };
   response.render('urls_index', templateVars);
 });
 
 app.get('/urls/new', (request, response) => {
+   let user = response.cookie('user_id')
   const templateVars = {longURL: urlDatabase[request.params.id],
-                       username: request.cookies[users.currentUserID]
+                       user_id: user
                         };
   response.render('urls_new', templateVars);
   console.log(templateVars)
 });
 
 app.get('/urls/:id', (request, response) => {
-  const templateVars = {shortURL: request.params.id,
-                       longURL: urlDatabase[request.params.id],
-                       username: request.cookies[users.currentUserID]
-                        };
+  const templateVars = {
+    shortURL: request.params.id,
+    longURL: urlDatabase[request.params.id],
+    user_id: users[currentUser].email
+  };
   response.render('urls_show', templateVars);
 });
 
@@ -83,6 +91,7 @@ app.get('/register', (request, response) => {
 
 app.post('/urls', (request, response) => {
 
+
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = request.body.longURL;
   response.redirect(`/urls/${shortURL}`);
@@ -95,32 +104,33 @@ app.post('/urls/:id/update', (request, response) => {
 });
 
 app.get('/login', (request, response) => {
+  console.log("is this working?");
+  let user_id = request.cookies.user_id;
+  // let user = user_id[user_id];
   let templateVars = {
-                      urls: urlDatabase,
-                      username: request.cookies[users.currentUserID]
-                      }
+      urls: urlDatabase,
+      user: user_id
+      };
   response.render('login', templateVars);
 });
 
 app.post('/login', (request, response,) => {
-  // console.log(request.body.email);
   for (currentUser in users) {
-    // console.log(currentUser);
     if ((users[currentUser].email === request.body.email) && (users[currentUser].password === request.body.password)) {
-      // console.log("found a match", currentUser)
-
-      // response.cookie('user_id', )
-      console.log(users[currentUser].id);
-    return response.redirect('/') && response.cookie('user_id', users[currentUser].id);
+    response.cookie('user_id', users[currentUser].id);
+    return response.redirect('/urls');
     }
   }
-    return response.send(400);
+    response.status(403)
+    return response.redirect('/register');
 
 });
 
 app.post('/logout', (request, response) => {
-  response.clearCookie("username", request.body.username);
+  response.clearCookie("user_id")
+  console.log("is this working?")
   response.redirect('/urls');
+
 });
 
 app.post('/register', (request, response) => {
@@ -146,7 +156,6 @@ app.post('/register', (request, response) => {
     response.status(400);
     response.send("You shall not pass... Please either enter a valid e-mail or password!");
   }
-  console.log(users);
 
 });
 

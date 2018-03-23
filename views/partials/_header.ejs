@@ -5,8 +5,6 @@
 
 <link rel= "stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
 
-<a href="/register">Register</a>
-<a href="/login">Login</a>
 
 <style>
   body {padding-top: 50px; }
@@ -20,25 +18,20 @@
     </a>
 
 
-    <% if (!username) { %>
-    <h6>Currently not logged in</h6>
+    <% if (user) { %>
     <ul class="nav navbar-nav">
-      <form  action="/login"method="POST" style="margin:75px;">
-        <label for="username"> Login</label>
-      <input id="name" type="text" name="username" placeholder="enter username here">
-      <input type="submit" value="send">
+    <form method="POST" action="/logout">
+         <label>Currently logged in as: <%= user.email %></label>
+          <button type="submit">Log out</button>
     </form>
     <% } else { %>
+    <form>
      <ul class="nav navbar-nav">
-      <h6>Currently logged in as: <%= username%></h6>
-      <form  action="/logout"method="POST" style="margin:75px;">
-        <label for="username"> Logout</label>
-      <input id="name" type"=text" name="username" placeholder= "<%= username%>">
-      <input type="submit" value="Clear">
-    </form>
-
-  <% } %>
-    <br/>
+      <h6>Currently not logged in</h6>
+          <a href="/register">Register</a>
+          <a href="/login">Login</a>
+         </form>
+    <% } %>
 
     </ul>
   </div>
