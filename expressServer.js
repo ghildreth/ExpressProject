@@ -1,10 +1,17 @@
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 8080;
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt')
 // const hashedPassword = bcrypt.hashSync(password, 10);
-app.use(cookieParser());
+// app.use(cookieParser());
+app.use(cookieSession( {
+  name: 'session',
+  keys: ['anystring'],
+
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}))
 
 app.set('view engine', 'ejs');
 
@@ -72,7 +79,7 @@ app.get('/hello', (request, response) => {
 });
 
 app.get('/urls', (request, response) => {
-  let user_id = request.cookies.user_id;
+  let user_id = request.session.user_id;
   let user = users[user_id];
   let newDatabase = urlsForEach(user_id);
 
@@ -87,7 +94,7 @@ app.get('/urls', (request, response) => {
 
 app.get('/login', (request, response) => {
 
-  let user_id = request.cookies.user_id;
+  let user_id = request.session.user_id;
   let user = users[user_id];
   let templateVars = {
       user: user
@@ -96,7 +103,7 @@ app.get('/login', (request, response) => {
 });
 
 app.get('/register', (request, response) => {
-  let user_id = request.cookies.user_id;
+  let user_id = request.session.user_id;
   let user = users[user_id];
   let templateVars = {
       user: user
@@ -105,7 +112,10 @@ app.get('/register', (request, response) => {
 });
 
 app.get('/urls/new', (request, response) => {
-  let user_id = request.cookies.user_id;
+  console.log("we are in the new page");
+
+  let user_id = request.session.user_id;
+  console.log(user_id);
   let user = users[user_id];
 
   if (user) {
@@ -118,12 +128,17 @@ app.get('/urls/new', (request, response) => {
    }
 
 });
+
+app.get('/urls/test',(request, response)=>{
+  console.log(request.session.user_id);
+});
+
 // broke AF
 app.get('/urls/:id', (request, response) => {
   // added in user_id to access the cookie
   console.log('does this work');
   let shortURL = request.params.id;
-  let user_id = request.cookies.user_id;
+  let user_id = request.session.user_id;
   let user = users[user_id];
   let longURL = urlDatabase[shortURL].longURL;
   let templateVars = {
@@ -162,7 +177,7 @@ app.post('/register', (request, response) => {
         email: request.body.email,
         password: bcrypt.hashSync(password, 10)
       };
-      response.cookie('user_id', currentUserID);
+      request.session.user_id = currentUserID;
       response.redirect('/urls');
   } else {
     response.redirect(400, '/register');
@@ -172,7 +187,7 @@ app.post('/register', (request, response) => {
 });
 
 app.post('/urls/:id/delete', (request, response) => {
-  let user_id = request.cookies.user_id;
+  let user_id = request.session.user_id;
   let user = users[user_id];
   if (user) {
     let templateVars = {
@@ -191,7 +206,7 @@ app.post('/urls', (request, response) => {
   urlDatabase[shortURL] = {
     shortURL: shortURL, //changed from id:
     longURL: request.body.longURL, //changed from url
-    uid: request.cookies.user_id //uid:
+    uid: request.session.user_id //uid:
   }
   response.redirect(`/urls/`);
   console.log(urlDatabase);
@@ -231,17 +246,19 @@ app.post('/login', (request, response,) => {
 
   if (result) {
     if (bcrypt.compareSync(request.body.password, result.password)) {
-      response.cookie('user_id', result.id);
+      console.log("user id and password matches");
+      request.session.user_id = result.id;
+      console.log(request.session.user_id);
       response.redirect('/urls');
     } else {
-      response.send("login info doesn't match = /");
+      response.send(400,'/login');
     }
 
   } else {
-    response.redirect(404, '/register');
+    response.redirect(403,'/register');
   }
 
-
+});
   // const hashedPassword = bcrypt.hashSync(password, 10);
   // for (currentUser in users) {
   //   if ((users[currentUser].email === request.body.email) && (users[currentUser].password, hashedPassword)) {
@@ -252,12 +269,11 @@ app.post('/login', (request, response,) => {
   //   }
   // }
   //   response.status(403)
-    response.redirect('/register');
 
-});
 
 app.post('/logout', (request, response) => {
-  response.clearCookie("user_id")
+  // response.clearCookie("user_id")
+  request.session = null;
   console.log("Did you mean to logout?")
   response.redirect('/urls');
 
