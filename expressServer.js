@@ -1,13 +1,16 @@
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 8080;
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt')
+// const hashedPassword = bcrypt.hashSync(password, 10);
 app.use(cookieParser());
 
 app.set('view engine', 'ejs');
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: true}));
+
 
 var urlDatabase = {
   // b2xVn2: {
@@ -143,6 +146,7 @@ app.get('/u/:shortURL', (request, response) => {
 });
 
 app.post('/register', (request, response) => {
+  const { email, password } = request.body;
   for(let user_id in users) {
     const user = users[user_id];
     if (user.email === request.body.email) {
@@ -156,7 +160,7 @@ app.post('/register', (request, response) => {
       users[currentUserID] = {
         id: currentUserID,
         email: request.body.email,
-        password: request.body.password
+        password: bcrypt.hashSync(password, 10)
       };
       response.cookie('user_id', currentUserID);
       response.redirect('/urls');
@@ -191,42 +195,70 @@ app.post('/urls', (request, response) => {
   }
   response.redirect(`/urls/`);
   console.log(urlDatabase);
+  console.log(users);
   // don't forget about this thing later maybe ${shortURL}`
 });
 
-app.post('/urls/:id', (request, response) => {
+app.post('/urls/:id/update', (request, response) => {
   // let user = users[user_id]
   // if (user) {
   //   let templateVars = {
   //     user: user
   //   };
-    urlDatabase[request.params.id] = request.body.longURL;
+    urlDatabase[request.params.id].longURL = request.body.longURL;
     console.log(urlDatabase[request.params.id].longURL);
-    response.redirect('/urls');
+    // response.redirect('/urls');
     response.redirect(`/urls/${request.params.id}`);
   // } else {
-    response.redirect('/login');
+    // response.redirect('/login');
   // }
 
 });
 
-
-app.post('/login', (request, response,) => {
-  for (currentUser in users) {
-    if ((users[currentUser].email === request.body.email) && (users[currentUser].password === request.body.password)) {
-      response.cookie('user_id', users[currentUser].id);
-      response.redirect('/urls');
-      return;
+function checkUserEmail(email) {
+  for (var key in users) {
+    if (users[key].email === email) {
+      return users[key];
     }
   }
-    response.status(403)
+}
+
+
+app.post('/login', (request, response,) => {
+  // (users[currentUser].password === request.body.password)) this was the second half of my if statement below
+  const { email, password } = request.body;
+  var result = checkUserEmail(request.body.email);
+
+  if (result) {
+    if (bcrypt.compareSync(request.body.password, result.password)) {
+      response.cookie('user_id', result.id);
+      response.redirect('/urls');
+    } else {
+      response.send("login info doesn't match = /");
+    }
+
+  } else {
+    response.redirect(404, '/register');
+  }
+
+
+  // const hashedPassword = bcrypt.hashSync(password, 10);
+  // for (currentUser in users) {
+  //   if ((users[currentUser].email === request.body.email) && (users[currentUser].password, hashedPassword)) {
+  //     response.cookie('user_id', users[currentUser].id);
+  //     response.redirect('/urls');
+  //     console.log('trying to log users:', users);
+  //     return;
+  //   }
+  // }
+  //   response.status(403)
     response.redirect('/register');
 
 });
 
 app.post('/logout', (request, response) => {
   response.clearCookie("user_id")
-  console.log("is this working?")
+  console.log("Did you mean to logout?")
   response.redirect('/urls');
 
 });
