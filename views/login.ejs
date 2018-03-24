@@ -19,10 +19,10 @@
       </form>
       <% } else { %>
        <ul class="nav navbar-nav">
-      <h6>Currently logged in as: <%= user %></h6>
-     <!--  <form  action="/logout"method="POST" style="margin:75px;"> -->
+      <h6>Currently logged in as: <%= user.user_id %></h6>
+      <form  action="/logout"method="POST" style="margin:75px;">
         <label for="username"> Logout</label>
-      <input id="name" type"=text" name="username" placeholder= "<%= username%>">
+      <input id="name" type"=text" name="username" placeholder= "login">
       <input type="submit" value="Clear">
     </form>
 
