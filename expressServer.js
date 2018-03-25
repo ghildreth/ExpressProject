@@ -1,11 +1,9 @@
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 8080;
-// const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt')
-// const hashedPassword = bcrypt.hashSync(password, 10);
-// app.use(cookieParser());
+
 app.use(cookieSession( {
   name: 'session',
   keys: ['anystring'],
@@ -45,6 +43,14 @@ const users = {
   }
 }
 
+function checkUserEmail(email) {
+  for (var key in users) {
+    if (users[key].email === email) {
+      return users[key];
+    }
+  }
+}
+
 function urlsForEach(user_id) {
   var newObject = {};
   for (var key in urlDatabase) {
@@ -67,7 +73,7 @@ function generateRandomString() {
 }
 
 app.get('/', function (request, response) {
-  response.end('hello world');
+  response.end('hello darkness my old friend...');
 });
 
 app.get('/urls.json', (request, response) => {
@@ -133,7 +139,6 @@ app.get('/urls/test',(request, response)=>{
   console.log(request.session.user_id);
 });
 
-// broke AF
 app.get('/urls/:id', (request, response) => {
   // added in user_id to access the cookie
   console.log('does this work');
@@ -204,9 +209,9 @@ app.post('/urls/:id/delete', (request, response) => {
 app.post('/urls', (request, response) => {
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = {
-    shortURL: shortURL, //changed from id:
-    longURL: request.body.longURL, //changed from url
-    uid: request.session.user_id //uid:
+    shortURL: shortURL,
+    longURL: request.body.longURL,
+    uid: request.session.user_id
   }
   response.redirect(`/urls/`);
   console.log(urlDatabase);
@@ -215,29 +220,10 @@ app.post('/urls', (request, response) => {
 });
 
 app.post('/urls/:id/update', (request, response) => {
-  // let user = users[user_id]
-  // if (user) {
-  //   let templateVars = {
-  //     user: user
-  //   };
     urlDatabase[request.params.id].longURL = request.body.longURL;
     console.log(urlDatabase[request.params.id].longURL);
-    // response.redirect('/urls');
     response.redirect(`/urls/${request.params.id}`);
-  // } else {
-    // response.redirect('/login');
-  // }
-
 });
-
-function checkUserEmail(email) {
-  for (var key in users) {
-    if (users[key].email === email) {
-      return users[key];
-    }
-  }
-}
-
 
 app.post('/login', (request, response,) => {
   // (users[currentUser].password === request.body.password)) this was the second half of my if statement below
@@ -259,17 +245,6 @@ app.post('/login', (request, response,) => {
   }
 
 });
-  // const hashedPassword = bcrypt.hashSync(password, 10);
-  // for (currentUser in users) {
-  //   if ((users[currentUser].email === request.body.email) && (users[currentUser].password, hashedPassword)) {
-  //     response.cookie('user_id', users[currentUser].id);
-  //     response.redirect('/urls');
-  //     console.log('trying to log users:', users);
-  //     return;
-  //   }
-  // }
-  //   response.status(403)
-
 
 app.post('/logout', (request, response) => {
   // response.clearCookie("user_id")
